@@ -103,3 +103,12 @@ WHERE uid=:uid AND pid=:pid AND sid=:sid
     RETURNING pid
     ''',            uid=uid, pid=pid, sid=sid,quantity=quantity)
             return rows[0] if rows is not None else None
+            
+    def update_product_description(pid, sid, description):
+        rows = app.db.execute(f"""
+UPDATE Inventory
+SET description = '{description}'
+WHERE pid={pid} AND sid={sid}
+RETURNING pid
+""")
+        return None

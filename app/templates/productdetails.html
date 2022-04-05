@@ -40,7 +40,12 @@
   <tbody>
     {% for seller in seller_info %}
     <tr>
-        <td><a href= "{{url_for('users.publicProfile', variable=seller[0]) }}">{{seller[1]}} {{seller[2]}} </a> </td>
+      <td><a href= "{{url_for('users.publicProfile', variable=seller[0]) }}">{{seller[1]}} {{seller[2]}} </a>
+        {% if current_user.is_authenticated and current_user.id==seller[0] %}
+          <br>
+          <a href="{{url_for('products.editproductdetails', sid=seller[0], pid=avail_products[0].id) }}" class="btn btn-primary btn-lg" role="button">Edit Product Details</a> 
+        {% endif %}          
+      </td>
         <td> {{seller[3]}} </td>
         <td> {{seller[4]}} </td>
         <td> {{seller[5]}} </td>
