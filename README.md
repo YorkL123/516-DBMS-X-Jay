@@ -8,7 +8,8 @@ If your existing DB tables have conflicts, you may DROP all your tables, then cr
 1. In your **/db** folder , run the command line: 
 psql -af create.sql amazon
 2. In your **/db/data** folder, run the command line:
-psql -af ../load.sql amazon
+2.1  psql -af ../load.sql amazon
+2.2  psql -af ../load_feedback.sql amazon
 
 ## Running/Stopping the Website
 

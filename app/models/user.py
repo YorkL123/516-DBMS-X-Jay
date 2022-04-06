@@ -134,3 +134,22 @@ WHERE id = :id
 """,
                               id=id)
         return User(*(rows[0])) if rows else None
+        
+        
+class SellerFeedback:
+    def __init__(self, uid, sid, rating, review, time_submitted, vote):
+        self.uid = uid
+        self.sid = sid
+        self.rating = rating
+        self.review = review
+        self.time_submitted = time_submitted
+        self.vote = vote
+    
+    @staticmethod
+    def getFeedback(sid):
+        rows = app.db.execute('''
+SELECT * FROM seller_feedback
+WHERE sid = :sid
+    ''',    sid=sid)
+        return [SellerFeedback(*row) for row in rows]
+    

@@ -6,7 +6,7 @@ from wtforms.fields.html5 import DateField
 from wtforms import StringField, IntegerField,PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo,NumberRange
 
-from .models.user import User
+from .models.user import User, SellerFeedback
 from .models.purchase import Purchase
 from .models.purchase import FilteredItem
 from werkzeug.datastructures import MultiDict
@@ -176,7 +176,8 @@ def balanceWithdraw():
 @bp.route('/<variable>/publicProfile', methods=['GET','POST'])
 def publicProfile(variable):
     info = User.get(variable)
+    feedbacks = SellerFeedback.getFeedback(info.id)
     if info is None:
         flash('The user does not exist!')
         return
-    return render_template('publicProfile.html',title='publicProfile',info=info)
+    return render_template('publicProfile.html',title='publicProfile',info=info, feedbacks=feedbacks)
