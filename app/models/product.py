@@ -104,7 +104,16 @@ WHERE uid=:uid AND pid=:pid AND sid=:sid
     RETURNING pid
     ''',            uid=uid, pid=pid, sid=sid,quantity=quantity)
             return rows[0] if rows is not None else None
-            
+        
+    @staticmethod
+    def removeFromCart(uid,pid,sid):
+        deletequery = app.db.execute('''
+DELETE FROM Cart
+WHERE uid=:uid AND pid=:pid AND sid=:sid
+''',
+                uid=uid, pid=pid, sid=sid)
+        return deletequery if deletequery is not None else None
+
     def update_product_description(pid, sid, description):
         rows = app.db.execute(f"""
 UPDATE Inventory

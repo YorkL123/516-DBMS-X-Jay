@@ -54,6 +54,14 @@ def addToCart(sid,pid):
             return redirect(url_for('products.details',pid=pid))
     return render_template('addToCart.html',title='Add to cart',form=form)
     
+@bp.route('/removefromocart/<sid>/<pid>', methods=['GET', 'POST'])
+def removeFromCart(sid,pid):
+    if not current_user.is_authenticated:
+        return redirect(url_for('users.login'))
+    Product.removeFromCart(current_user.id, int(pid), int(sid))  
+    cart = Cart.get(current_user.id)
+    return render_template('cart.html', cart = cart)
+
 @bp.route('/checkoutCart', methods=['GET', 'POST'])
 def checkoutCart():
     if not current_user.is_authenticated:
@@ -80,4 +88,3 @@ def orderDetail(orderid):
 
 
     
-
