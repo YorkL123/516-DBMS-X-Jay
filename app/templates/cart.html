@@ -33,7 +33,7 @@
           <td><a href="{{url_for('products.details', pid=product.pid)}}" >{{product.productname}}<br></td>
           <td><img src="{{url_for('static', filename='images/'+product.pid|string+'.png')}}" alt='no product image.' width="256" height="256" /></td>
           <td><a href="{{url_for('users.publicProfile', variable=product.sid) }}">{{product.sellerfirstname}} {{product.sellerlastname}}</td>
-          <td>{{product.quantity}}&nbsp;&nbsp;&nbsp;<a href="{{url_for('products.removeFromCart', sid=product.sid, pid=product.pid) }}">Remove</a></td>
+          <td>{{product.quantity}}&nbsp;&nbsp;&nbsp;<a href="{{url_for('products.removeFromCart', sid=product.sid, pid=product.pid) }}" class="btn btn-primary btn-lg" role="button">Remove</a></td>
           <td>{{product.unitprice}}</td>
         </tr>
         {% set _= total.append(total.pop() + product.quantity * product.unitprice) %}
