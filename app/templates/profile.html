@@ -51,6 +51,13 @@
       {% endfor %}
     </p>
     <p>
+      {{ searchform.date.label }}
+      {{ searchform.date(size=32) }}<br/>
+      {% for error in searchform.date.errors %}
+      <span style="color: red;">[{{ error }}]</span>
+      {% endfor %}
+    </p>
+    <p>
       {% with messages = get_flashed_messages() %}
       {% if messages %}
       <ul>

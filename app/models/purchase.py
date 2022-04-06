@@ -1,5 +1,5 @@
 from flask import current_app as app
-
+from datetime import datetime
 
 class Purchase:
     def __init__(self, orderid, totalprice, totalQt, time_purchased, isFulfill):
@@ -72,7 +72,8 @@ class FilteredItem:
         self.fulfilled = fulfilled
     
     @staticmethod
-    def getFilteredItem(productNameKeyword, sellerLastNameKeyword, sellerFirstNameKeyword, uid):
+    def getFilteredItem(productNameKeyword, sellerLastNameKeyword, sellerFirstNameKeyword, date, uid):
+        date = date.strftime("%Y-%m-%d")
         rows = app.db.execute(f'''
 SELECT purchases.id, purchases.time_purchased, purchases.pid, products.name, purchases.sid, users.lastname, users.firstname, purchases.quantity, purchases.finalprice, purchases.fulfillstate
 FROM purchases, products, users
@@ -82,6 +83,7 @@ AND users.id=purchases.sid
 AND products.name LIKE '{"%"+productNameKeyword+"%"}'
 AND users.lastname LIKE '{"%"+sellerLastNameKeyword+"%"}'
 AND users.firstname LIKE '{"%"+sellerFirstNameKeyword+"%"}'
+AND TO_CHAR(purchases.time_purchased,'YYYY-MM-DD') LIKE :date
 ORDER BY purchases.time_purchased DESC
-''', uid=uid)
+''', uid=uid, date=date)
         return  [FilteredItem(*row) for row in rows]
