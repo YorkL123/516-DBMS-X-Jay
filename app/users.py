@@ -7,7 +7,7 @@ from wtforms import StringField, IntegerField,PasswordField, BooleanField, Submi
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo,NumberRange
 
 from .models.user import User, SellerFeedback
-from .models.purchase import Purchase
+from .models.purchase import Purchase, PurchaseSum
 from .models.purchase import FilteredItem
 from werkzeug.datastructures import MultiDict
 import datetime
@@ -121,7 +121,7 @@ def profile():
     if info is None:
         return redirect(url_for('users.login'))
         
-    purchases = Purchase.get_all_by_uid_since(
+    purchases = PurchaseSum.get_all_by_uid_since(
             current_user.id, datetime.datetime(1980, 9, 14, 0, 0, 0))
             
     searchForm = SearchForm()
