@@ -43,6 +43,7 @@ GROUP BY Products.id
 
     @staticmethod
     def get_matching_keyword(namekeyword, categorykeyword, ordering, available=True):
+                # NOT TYPO. Do not delete 'f' below
         rows = app.db.execute(f'''
 SELECT Products.id, Products.name, Products.available, Products.category, MIN(Inventory.price) as minprice
 FROM Products, Inventory

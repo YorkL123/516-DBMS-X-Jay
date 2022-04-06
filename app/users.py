@@ -2,11 +2,12 @@ from flask import render_template, redirect, url_for, flash, request
 from werkzeug.urls import url_parse
 from flask_login import login_user, logout_user, current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField,PasswordField, BooleanField, SubmitField
+from wtforms import StringField, IntegerField,PasswordField, BooleanField, DateField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo,NumberRange
 
 from .models.user import User
 from .models.purchase import Purchase
+from .models.purchase import FilteredItem
 from werkzeug.datastructures import MultiDict
 import datetime
 
@@ -105,7 +106,14 @@ def logout():
     logout_user()
     return redirect(url_for('index.index'))
     
-    
+# for searching purchase history
+class SearchForm(FlaskForm):
+    productNameKeyword = StringField('Product Name Keyword')
+    sellerLastNameKeyword = StringField('Seller Last Name Keyword')
+    sellerFirstNameKeyword = StringField('Seller First Name Keyword')
+    #dateFilter = DateField('Time purchased', format='%m/%d/%Y', validators=(validators.Optional()) )
+    submit = SubmitField('Search')
+
 @bp.route('/profile', methods=['GET', 'POST'])
 def profile():
     info = User.get(current_user.id)
@@ -114,7 +122,13 @@ def profile():
         
     purchases = Purchase.get_all_by_uid_since(
             current_user.id, datetime.datetime(1980, 9, 14, 0, 0, 0))
-    return render_template('profile.html',title='profile_title',userinfo=info, purchase_history=purchases)
+            
+    searchForm = SearchForm()
+
+    if searchForm.validate_on_submit():
+        newfiltered = FilteredItem.getFilteredItem(searchForm.productNameKeyword.data, searchForm.sellerLastNameKeyword.data, searchForm.sellerFirstNameKeyword.data, current_user.id)
+        return render_template('profile.html',title='profile_title',userinfo=info, purchase_history=purchases, searchform=searchForm, filteredItems=newfiltered)
+    return render_template('profile.html',title='profile_title',userinfo=info, purchase_history=purchases, searchform=searchForm, filteredItems=[])
     
         
 @bp.route('/editprofile', methods=['GET', 'POST'])
