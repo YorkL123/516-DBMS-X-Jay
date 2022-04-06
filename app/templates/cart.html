@@ -30,9 +30,9 @@
       {% for product in cart%}
         <tr>
           <th scope="row">{{product.pid}}</th>
-          <td>{{product.productname}}<br></td>
+          <td><a href="{{url_for('products.details', pid=product.pid)}}" >{{product.productname}}<br></td>
           <td><img src="{{url_for('static', filename='images/'+product.pid|string+'.png')}}" alt='no product image.' width="256" height="256" /></td>
-          <td>{{product.sellerfirstname}} {{product.sellerlastname}}</td>
+          <td><a href="{{url_for('users.publicProfile', variable=product.sid) }}">{{product.sellerfirstname}} {{product.sellerlastname}}</td>
           <td>{{product.quantity}}</td>
           <td>{{product.unitprice}}</td>
         </tr>
@@ -40,7 +40,7 @@
       {% endfor %}
     </tbody>
   </table>
-    <p>Total is: {{total[0] }} </p>
+    <h4>Total is: {{total[0] }} </h4>
 <a href = "{{url_for('products.checkoutCart')}}" class="btn btn-primary btn-lg" role="button">Checkout!</a>
 
   {% else %}
