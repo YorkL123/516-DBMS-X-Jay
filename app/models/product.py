@@ -147,3 +147,12 @@ GROUP BY pid
             if p.id in ratings.keys():
                 p.avgrating = ratings[p.id]
         return products
+
+    @staticmethod
+    def get_product_ratings_and_reviews(pid):
+        rows = app.db.execute('''
+SELECT ratings, review, date(time_submitted)
+FROM Product_Feedback
+WHERE pid=:pid
+''', pid=pid)
+        return [{"rating":row[0], "review":row[1], "date":row[2]} for row in rows]

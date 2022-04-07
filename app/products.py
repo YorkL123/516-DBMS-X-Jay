@@ -26,8 +26,11 @@ class AddToCartForm(FlaskForm):
 @bp.route('/productdetails/<int:pid>', methods=['GET', 'POST'])
 def details(pid):
     product = Product.get(pid)
+    products = Product.set_avgratings([product])
     seller_info = Product.getSellerInfo(pid)
-    return render_template('productdetails.html', avail_products = [product],seller_info = seller_info)
+    ratings_and_reviews = Product.get_product_ratings_and_reviews(pid)
+    return render_template('productdetails.html', avail_products = products, seller_info = seller_info,
+     ratings_and_reviews = ratings_and_reviews)
 
 @bp.route('/editproductdetails/<int:pid>/<int:sid>', methods=['GET', 'POST'])
 def editproductdetails(pid, sid):# get all available products for sale:
@@ -98,8 +101,4 @@ def orderDetail(orderid):
         flash("Sorry, you don't have access to this order")
         return redirect(url_for('index.index'))
     return render_template('orderDetail.html',title='Order Detail', orderid=orderid, orderDetail=orderDetail)
-
-    
-
-
     
