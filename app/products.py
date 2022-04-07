@@ -4,11 +4,15 @@ from wtforms import IntegerField, SubmitField, StringField
 from .models.product import Product
 from .models.cart import Cart
 from .models.purchase import OrderDetail
-from wtforms.validators import ValidationError, DataRequired, NumberRange
+from wtforms.validators import ValidationError, DataRequired, NumberRange, Required
 from flask_login import current_user
 
 from flask import Blueprint
 bp = Blueprint('products', __name__)
+
+class EditQuantityForm(FlaskForm):
+    quantity = IntegerField('Quantity')
+    submit = SubmitField('Edit Quantity')
 
 class EditProductDetailsForm(FlaskForm):
     description = StringField('Description')
@@ -30,7 +34,6 @@ def editproductdetails(pid, sid):# get all available products for sale:
     updateform = EditProductDetailsForm()
     if updateform.validate_on_submit():
         Product.update_product_description(pid, sid, updateform.description.data)
-        # TODO: I think I need to change the below to call render productdetails page
         product = Product.get(pid)
         seller_info = Product.getSellerInfo(pid)
         return render_template('productdetails.html', avail_products = [product],seller_info = seller_info)
@@ -54,7 +57,19 @@ def addToCart(sid,pid):
             return redirect(url_for('products.details',pid=pid))
     return render_template('addToCart.html',title='Add to cart',form=form)
     
-@bp.route('/removefromocart/<sid>/<pid>', methods=['GET', 'POST'])
+@bp.route('/editquantity/<sid>/<pid>', methods=['GET', 'POST'])
+def editQuantity(sid,pid):
+    quantityform = EditQuantityForm()
+    if quantityform.validate_on_submit():
+        if quantityform.quantity.data <= 0:
+            Product.removeFromCart(current_user.id, int(pid), int(sid))  
+        else:
+            Product.update_quantity_in_cart(current_user.id, pid, sid, quantityform.quantity.data)
+        cart = Cart.get(current_user.id)
+        return render_template('cart.html', cart = cart)
+    return render_template('edit_product_quantity.html', pid=pid, sid=sid, quantityform=quantityform)
+    
+@bp.route('/removefromcart/<sid>/<pid>', methods=['GET', 'POST'])
 def removeFromCart(sid,pid):
     if not current_user.is_authenticated:
         return redirect(url_for('users.login'))

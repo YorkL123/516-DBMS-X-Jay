@@ -43,7 +43,6 @@ GROUP BY Products.id
 
     @staticmethod
     def get_matching_keyword(namekeyword, categorykeyword, ordering, available=True):
-                # NOT TYPO. Do not delete 'f' below
         rows = app.db.execute(f'''
 SELECT Products.id, Products.name, Products.available, Products.category, MIN(Inventory.price) as minprice
 FROM Products, Inventory
@@ -114,6 +113,7 @@ WHERE uid=:uid AND pid=:pid AND sid=:sid
                 uid=uid, pid=pid, sid=sid)
         return deletequery if deletequery is not None else None
 
+    @staticmethod
     def update_product_description(pid, sid, description):
         rows = app.db.execute(f"""
 UPDATE Inventory
@@ -122,3 +122,13 @@ WHERE pid={pid} AND sid={sid}
 RETURNING pid
 """)
         return None
+
+    @staticmethod
+    def update_quantity_in_cart(uid, pid, sid, quantity):
+        updatequery = app.db.execute('''
+UPDATE Cart
+SET quantity = :newQty
+WHERE uid=:uid AND pid=:pid AND sid=:sid
+''',
+                uid=uid, pid=pid, sid=sid, newQty=quantity)
+        return updatequery if updatequery is not None else None
