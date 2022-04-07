@@ -2,12 +2,13 @@ from flask import current_app as app
 
 
 class Product:
-    def __init__(self, id, name, available, category, minprice=None):
+    def __init__(self, id, name, available, category, minprice=None, avgrating=None,):
         self.id = id
         self.name = name
         self.available = available
         self.category = category
         self.minprice = minprice
+        self.avgrating = avgrating
 
 
     @staticmethod
@@ -132,3 +133,17 @@ WHERE uid=:uid AND pid=:pid AND sid=:sid
 ''',
                 uid=uid, pid=pid, sid=sid, newQty=quantity)
         return updatequery if updatequery is not None else None
+
+
+    @staticmethod
+    def set_avgratings(products):
+        rows = app.db.execute('''
+SELECT pid, AVG(ratings)
+FROM Product_Feedback
+GROUP BY pid
+''')
+        ratings = {id:avgrating for id,avgrating in rows}
+        for p in products:
+            if p.id in ratings.keys():
+                p.avgrating = ratings[p.id]
+        return products

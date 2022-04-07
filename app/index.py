@@ -30,6 +30,7 @@ class SearchForm(FlaskForm):
 def index():
     # get all available products for sale:
     products = Product.get_all(available=True)
+    products = Product.set_avgratings(products)
     searchform = SearchForm()
     # find the products current user has bought:
     # render the page by adding information to the index.html file
@@ -38,6 +39,7 @@ def index():
                                                 categorykeyword=searchform.categorykeyword.data,
                                                 ordering=searchform.sortfield.data,
                                                 available=True)
+        products = Product.set_avgratings(products)
         return render_template('index.html',
                            avail_products=products,
                            searchform=searchform)

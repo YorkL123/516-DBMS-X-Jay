@@ -50,6 +50,7 @@
       <th scope="col">Image</th>
       <th scope="col">Category</th>
       <th scope="col">Minimum Price</th>
+      <th scope="col">Average Rating</th>
       <!-- <th scope="col">Price</th> -->
     </tr>
   </thead>
@@ -61,7 +62,7 @@
         <td><img src="{{url_for('static', filename='images/'+product.id|string+'.png')}}" alt='no product image.' width="256" height="256" /></td>
         <td>{{product.category}}</td>
         <td>{{product.minprice}}</td>
-        <!-- <td>{{product.price}}</td> -->
+        <td>{{'%0.2f' % product.avgrating if product.avgrating else ""}}</td>
       </tr>
     {% endfor %}
   </tbody>
