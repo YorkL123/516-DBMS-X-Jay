@@ -136,6 +136,20 @@ WHERE id = :id
         return User(*(rows[0])) if rows else None
         
     @staticmethod
+    def getPublicView(id):
+        isSeller = app.db.execute('''
+SELECT pid FROM inventory WHERE sid=:uid
+''',        uid=id)
+        rows = app.db.execute("""
+SELECT id, email, firstname, lastname, address, balance
+FROM Users
+WHERE id = :id
+""",
+                              id=id)
+        userInfo = User(*(rows[0])) if rows else None
+        return isSeller, userInfo
+        
+    @staticmethod
     def get_by_purchase_id(purchase_id):
         rows = app.db.execute("""
 SELECT DISTINCT users.id, email, firstname, lastname, address, balance

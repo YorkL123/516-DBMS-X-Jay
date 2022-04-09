@@ -147,7 +147,16 @@ def editProfile():
             return redirect(url_for('users.profile'))
     
     return render_template('editProfile.html',title='edit profile_title',userinfo=info,form=form)
-    
+ 
+@bp.route('/profileFeedback',methods = ['GET', 'POST'])
+def profileFeedback():
+    info = User.get(current_user.id)
+    if info is None:
+        return redirect(url_for('users.login'))
+
+    feedbackReceived = SellerFeedback.getFeedback(current_user.id)
+    return render_template('profileFeedback.html', feedbackReceived=feedbackReceived)
+
 @bp.route('/balancetopup', methods=['GET','POST'])
 def balanceTopup():
     info = User.get(current_user.id)
@@ -175,9 +184,9 @@ def balanceWithdraw():
 
 @bp.route('/<variable>/publicProfile', methods=['GET','POST'])
 def publicProfile(variable):
-    info = User.get(variable)
+    isSeller, info = User.getPublicView(variable)
     feedbacks = SellerFeedback.getFeedback(info.id)
     if info is None:
         flash('The user does not exist!')
         return
-    return render_template('publicProfile.html',title='publicProfile',info=info, feedbacks=feedbacks)
+    return render_template('publicProfile.html',title='publicProfile',isSeller=isSeller, info=info, feedbacks=feedbacks)
