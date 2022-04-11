@@ -1,9 +1,10 @@
 from flask import render_template, redirect, url_for, flash
 from flask_wtf import FlaskForm
-from wtforms import IntegerField, SubmitField, StringField
+from wtforms import IntegerField, SubmitField, StringField, TextAreaField
 from .models.product import Product
 from .models.cart import Cart
 from .models.purchase import OrderDetail
+from .models.feedbackToProduct import feedbackToProduct
 from wtforms.validators import ValidationError, DataRequired, NumberRange, Required
 from flask_login import current_user
 
@@ -102,3 +103,29 @@ def orderDetail(orderid):
         return redirect(url_for('index.index'))
     return render_template('orderDetail.html',title='Order Detail', orderid=orderid, orderDetail=orderDetail)
     
+
+class feedbackToProductForm(FlaskForm):
+    ratings = IntegerField('Please rate this product from 1-5',
+                            validators=[DataRequired(), NumberRange(min=1, max = 5, message='exceeds valid range')])
+    feedback = TextAreaField('Please write your feedback to this product', validators=[DataRequired()])
+    submit = SubmitField('submit')
+
+@bp.route('/writefeedback/<pid>', methods=['GET', 'POST'])
+def writeFeedback(pid):
+    if not current_user.is_authenticated:
+        return redirect(url_for('users.login'))
+    form = feedbackToProductForm()
+    uid = current_user.id
+    if form.validate_on_submit():
+        #send feedback to db
+        text = form.feedback.data
+        ratings = form.ratings.data
+        result = feedbackToProduct.AddFeedbackToProduct(uid, pid, ratings, text)
+        if not result:
+            flash('sorry, something went wrong')
+        else:
+            flash('submit already')
+            product = Product.get(pid)
+            seller_info = Product.getSellerInfo(pid)
+            return render_template('productdetails.html',avail_products=[product],seller_info=seller_info)
+    return render_template('feedbackToProduct.html',form=form, pid=pid)

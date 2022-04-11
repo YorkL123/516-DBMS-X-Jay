@@ -194,3 +194,26 @@ AND TO_CHAR(purchases.time_purchased,'YYYY-MM-DD') LIKE :date
 ORDER BY purchases.time_purchased DESC
 ''', uid=uid, date=date)
         return  [FilteredItem(*row) for row in rows]
+        
+class Productsell:
+    def __init__(self, pid, name, total_quantity):
+        self.pid = pid
+        self.name = name
+        self.total_quantity = total_quantity
+
+    @staticmethod
+    def get_most_popular(sid):
+        print(sid)
+        rows = app.db.execute('''
+SELECT products.id, products.name, T1.total_quantity FROM products
+JOIN (SELECT pid, SUM(quantity) as total_quantity
+FROM purchases
+WHERE sid = :sid
+AND time_purchased > CURRENT_DATE - INTERVAL '1 month'
+GROUP BY pid) T1
+ON products.id = T1.pid
+ORDER BY T1.total_quantity DESC
+LIMIT 10
+''',
+                              sid=sid)
+        return [Productsell(*row) for row in rows]

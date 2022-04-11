@@ -101,7 +101,7 @@ CREATE TABLE Product_Feedback(
     ratings INT NOT NULL,
     review VARCHAR(3000) NOT NULL,
     time_submitted timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
-    vote INT NOT NULL
+    vote INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE Seller_Feedback(
@@ -110,7 +110,7 @@ CREATE TABLE Seller_Feedback(
     ratings INT NOT NULL,
     review VARCHAR(3000) NOT NULL,
     time_submitted timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
-    vote INT NOT NULL
+    vote INT NOT NULL DEFAULT 0
 );
 
 

@@ -87,9 +87,8 @@
 {% else %}
 <h4> No ratings or reviews for this product. </h4>
 {% endif %}
-
-<br><br>
-
+<a href="{{url_for('products.writeFeedback', pid = avail_products[0].id) }}" class="btn btn-primary btn-lg" role="button">Write feedback</a>
+&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="{{ url_for('inventory.add_product_to_inventory', pid = avail_products[0].id) }}" class="btn btn-primary btn-lg" role="button">I want to sell this product</a>
 
 

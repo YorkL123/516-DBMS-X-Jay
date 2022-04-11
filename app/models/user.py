@@ -182,4 +182,39 @@ SELECT * FROM seller_feedback
 WHERE sid = :sid
     ''',    sid=sid)
         return [SellerFeedback(*row) for row in rows]
-    
+        
+class MyFeedbackProduct:
+    def __init__(self, pid, productname, rating, review, time_submitted):
+        self.pid = pid
+        self.productname = productname
+        self.rating = rating
+        self.review = review
+        self.time_submitted = time_submitted
+
+    @staticmethod
+    def getFeedback(uid):
+        rows = app.db.execute('''
+SELECT product_feedback.pid, products.name, product_feedback.ratings, product_feedback.review, product_feedback.time_submitted
+FROM product_feedback, products
+WHERE product_feedback.uid = :uid AND products.id=product_feedback.pid
+    ''',    uid=uid)
+        return [MyFeedbackProduct(*row) for row in rows]
+
+class MyFeedbackSeller:
+    def __init__(self, sid, sellerFname,sellerLname, rating, review, time_submitted):
+        self.sid = sid
+        self.sellerFname = sellerFname
+        self.sellerLname = sellerLname
+        self.rating = rating
+        self.review = review
+        self.time_submitted = time_submitted
+
+    @staticmethod
+    def getFeedback(uid):
+        rows = app.db.execute('''
+SELECT seller_feedback.sid, users.firstname, users.lastname, seller_feedback.ratings, seller_feedback.review, seller_feedback.time_submitted
+FROM seller_feedback, users
+WHERE seller_feedback.uid = :uid AND seller_feedback.sid = users.id
+    ''',    uid=uid)
+        return [MyFeedbackSeller(*row) for row in rows]
+

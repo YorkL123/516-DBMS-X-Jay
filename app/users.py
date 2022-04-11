@@ -3,12 +3,13 @@ from werkzeug.urls import url_parse
 from flask_login import login_user, logout_user, current_user
 from flask_wtf import FlaskForm
 from wtforms.fields.html5 import DateField
-from wtforms import StringField, IntegerField,PasswordField, BooleanField, SubmitField
+from wtforms import StringField, IntegerField,PasswordField, BooleanField, SubmitField, TextAreaField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo,NumberRange
 
-from .models.user import User, SellerFeedback
+from .models.user import User, SellerFeedback, MyFeedbackProduct, MyFeedbackSeller
 from .models.purchase import Purchase, PurchaseSum
 from .models.purchase import FilteredItem
+from .models.feedbackToSeller import feedbackToSeller
 from werkzeug.datastructures import MultiDict
 import datetime
 
@@ -155,7 +156,9 @@ def profileFeedback():
         return redirect(url_for('users.login'))
 
     feedbackReceived = SellerFeedback.getFeedback(current_user.id)
-    return render_template('profileFeedback.html', feedbackReceived=feedbackReceived)
+    myFeedbackProduct = MyFeedbackProduct.getFeedback(info.id)
+    myFeedbackSeller = MyFeedbackSeller.getFeedback(info.id)
+    return render_template('profileFeedback.html', feedbackReceived=feedbackReceived, myFeedbackProduct=myFeedbackProduct, myFeedbackSeller=myFeedbackSeller)
 
 @bp.route('/balancetopup', methods=['GET','POST'])
 def balanceTopup():
@@ -182,11 +185,36 @@ def balanceWithdraw():
     return render_template('balanceWithdraw.html',title='balance withdraw',form=form)
         
 
+class feedbackToSellerForm(FlaskForm):
+    ratings = IntegerField('Please rate this seller from 1-5',
+                            validators=[DataRequired(), NumberRange(min=1, max = 5, message='exceeds valid range')])
+    feedback = TextAreaField('Please write your feedback to this seller', validators=[DataRequired()])
+    submit = SubmitField('submit')
+    
 @bp.route('/<variable>/publicProfile', methods=['GET','POST'])
 def publicProfile(variable):
     isSeller, info = User.getPublicView(variable)
-    feedbacks = SellerFeedback.getFeedback(info.id)
     if info is None:
         flash('The user does not exist!')
         return
-    return render_template('publicProfile.html',title='publicProfile',isSeller=isSeller, info=info, feedbacks=feedbacks)
+        
+    form = feedbackToSellerForm()
+    uid = current_user.id
+    if form.validate_on_submit():
+        #send feedback to db
+        text = form.feedback.data
+        ratings = form.ratings.data
+        result = feedbackToSeller.AddFeedbackToSeller(uid, int(variable), ratings, text)
+        if not result:
+            flash('sorry, something went wrong')
+        else:
+            flash('submitting success')
+            # redirect
+            purchased, commented = feedbackToSeller.VerifyPurchase(uid, int(variable))
+            feedbacks = SellerFeedback.getFeedback(info.id)
+            return render_template('publicProfile.html',form = form, isSeller=isSeller, info=info, purchased = purchased, commented = commented, feedbacks=feedbacks)
+    
+    purchased, commented = feedbackToSeller.VerifyPurchase(uid, int(variable))
+    feedbacks = SellerFeedback.getFeedback(info.id)
+    return render_template('publicProfile.html',form=form, isSeller=isSeller, info=info, purchased = purchased, commented = commented, feedbacks=feedbacks)
+        
