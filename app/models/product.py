@@ -148,11 +148,15 @@ GROUP BY pid
                 p.avgrating = ratings[p.id]
         return products
 
+
+
+
     @staticmethod
     def get_product_ratings_and_reviews(pid):
         rows = app.db.execute('''
-SELECT ratings, review, date(time_submitted)
+SELECT uid, ratings, review, date(time_submitted), vote
 FROM Product_Feedback
 WHERE pid=:pid
+ORDER by vote DESC, date(time_submitted) DESC
 ''', pid=pid)
-        return [{"rating":row[0], "review":row[1], "date":row[2]} for row in rows]
+        return [{"uid":row[0], "rating":row[1], "review":row[2], "date":row[3], "vote":row[4]} for row in rows]

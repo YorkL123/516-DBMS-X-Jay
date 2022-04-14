@@ -52,6 +52,8 @@
 
 <h4>Feedbacks for this seller</h4>
 {% if feedbacks|length != 0 %}
+<p>This seller received {{Numreviews}} reviews</p>
+<p>Average Rating: {{'%0.2f' % Avgratings}} </p>
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
     <tr>
@@ -71,7 +73,7 @@
         <td> {{feedback.review}} </td>
         <td> {{feedback.vote}}</td>
         <td> {{feedback.time_submitted}} </td>
-        <td> <u>TODO vote helpful</u></td>
+        <td> <a href="{{ url_for('users.voteStatus', uid = feedback.uid, sid = feedback.sid) }}" type="button" class="btn btn-light">vote</a></td>
         
     </tr>
     {% endfor %}

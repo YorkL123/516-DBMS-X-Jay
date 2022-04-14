@@ -180,6 +180,7 @@ class SellerFeedback:
         rows = app.db.execute('''
 SELECT * FROM seller_feedback
 WHERE sid = :sid
+ORDER by vote DESC, time_submitted DESC 
     ''',    sid=sid)
         return [SellerFeedback(*row) for row in rows]
         

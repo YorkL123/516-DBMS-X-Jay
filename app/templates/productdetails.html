@@ -65,20 +65,29 @@
 
 {% if ratings_and_reviews|length != 0 %}
 <h4>Ratings and Reviews:</h4>
+<p>This product has {{Numreviews}} reviews</p>
+<p>Average Rating: {{'%0.2f' % Avgratings}} </p>
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
     <tr>
+      <th scope="col">Uid</th>
       <th scope="col">Rating</th>
       <th scope="col">Review</th>
       <th scope="col">Date</th>
+      <th scope="col">Vote</th>
+      <th scope="col"></th>
     </tr>
   </thead>
   <tbody>
     {% for rnr in ratings_and_reviews %}
     <tr>
+        <td> {{rnr['uid']}} </td>
         <td> {{rnr['rating']}} </td>
         <td> {{rnr['review']}} </td>
         <td> {{rnr['date']}} </td>
+        <td> {{rnr['vote']}} </td>
+        <td> <a href="{{ url_for('products.productVote', uid = rnr['uid'], pid = avail_products[0].id) }}" type="button" class="btn btn-light">vote</a></td>
+
     </tr>
     {% endfor %}
     </tbody>

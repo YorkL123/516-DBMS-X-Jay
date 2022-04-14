@@ -10,6 +10,7 @@ from .models.user import User, SellerFeedback, MyFeedbackProduct, MyFeedbackSell
 from .models.purchase import Purchase, PurchaseSum
 from .models.purchase import FilteredItem
 from .models.feedbackToSeller import feedbackToSeller
+from .models.feedbackToProduct import feedbackToProduct
 from werkzeug.datastructures import MultiDict
 import datetime
 
@@ -148,17 +149,18 @@ def editProfile():
             return redirect(url_for('users.profile'))
     
     return render_template('editProfile.html',title='edit profile_title',userinfo=info,form=form)
- 
-@bp.route('/profileFeedback',methods = ['GET', 'POST'])
+
+
+@bp.route('/profileFeedback', methods = ['GET', 'POST'])
 def profileFeedback():
     info = User.get(current_user.id)
     if info is None:
         return redirect(url_for('users.login'))
-
     feedbackReceived = SellerFeedback.getFeedback(current_user.id)
     myFeedbackProduct = MyFeedbackProduct.getFeedback(info.id)
     myFeedbackSeller = MyFeedbackSeller.getFeedback(info.id)
     return render_template('profileFeedback.html', feedbackReceived=feedbackReceived, myFeedbackProduct=myFeedbackProduct, myFeedbackSeller=myFeedbackSeller)
+
 
 @bp.route('/balancetopup', methods=['GET','POST'])
 def balanceTopup():
@@ -194,12 +196,12 @@ class feedbackToSellerForm(FlaskForm):
 @bp.route('/<variable>/publicProfile', methods=['GET','POST'])
 def publicProfile(variable):
     isSeller, info = User.getPublicView(variable)
+    uid = current_user.id
     if info is None:
         flash('The user does not exist!')
         return
         
     form = feedbackToSellerForm()
-    uid = current_user.id
     if form.validate_on_submit():
         #send feedback to db
         text = form.feedback.data
@@ -210,11 +212,121 @@ def publicProfile(variable):
         else:
             flash('submitting success')
             # redirect
+            Numreviews, Avgratings = feedbackToSeller.SummaryRatings(int(variable))
             purchased, commented = feedbackToSeller.VerifyPurchase(uid, int(variable))
             feedbacks = SellerFeedback.getFeedback(info.id)
-            return render_template('publicProfile.html',form = form, isSeller=isSeller, info=info, purchased = purchased, commented = commented, feedbacks=feedbacks)
-    
+            return render_template('publicProfile.html',form=form, isSeller=isSeller, info=info, purchased = purchased, commented = commented, feedbacks=feedbacks, Numreviews =Numreviews, Avgratings = Avgratings)
+    Numreviews, Avgratings = feedbackToSeller.SummaryRatings(int(variable))
     purchased, commented = feedbackToSeller.VerifyPurchase(uid, int(variable))
     feedbacks = SellerFeedback.getFeedback(info.id)
-    return render_template('publicProfile.html',form=form, isSeller=isSeller, info=info, purchased = purchased, commented = commented, feedbacks=feedbacks)
+    return render_template('publicProfile.html',form=form, isSeller=isSeller, info=info, purchased = purchased, commented = commented, feedbacks=feedbacks, Numreviews =Numreviews, Avgratings = Avgratings)
+
+
+
+def getUpdateFeedback(myratings, text):
+    class UpdateFeedbackForm(FlaskForm):
+
+        ratings = IntegerField('Please update your rating from 1-5',
+                            default=myratings, validators=[DataRequired(), NumberRange(min=1, max = 5, message='exceeds valid range')])
+        feedback = TextAreaField('Please update your feedback',default=text, validators=[DataRequired()])
+        submit = SubmitField('update')
         
+    return UpdateFeedbackForm()
+
+@bp.route('/updateSellerFeedback/<sid>', methods = ['GET', 'POST'])
+def updateSellerFeedback(sid):
+    info = User.get(current_user.id)
+    uid = current_user.id
+    ratings, text = feedbackToSeller.GetFeedback(uid, int(sid))
+    form = getUpdateFeedback(int(ratings), text)
+    
+    if info is None:
+        return redirect(url_for('users.login'))
+    if form.validate_on_submit():
+        text = form.feedback.data
+        ratings = form.ratings.data
+        result = feedbackToSeller.UpdateFeedback(uid, sid, ratings, text)
+        if not result:
+            flash('sorry, something went wrong')
+        else:
+            flash('Update success')
+            # redirect
+            feedbackReceived = SellerFeedback.getFeedback(current_user.id)
+            myFeedbackProduct = MyFeedbackProduct.getFeedback(info.id)
+            myFeedbackSeller = MyFeedbackSeller.getFeedback(info.id)
+            return render_template('profileFeedback.html', feedbackReceived=feedbackReceived, myFeedbackProduct=myFeedbackProduct, myFeedbackSeller=myFeedbackSeller)
+
+    return render_template('updateSellerFeedback.html', form = form)
+
+
+@bp.route('/updateProductFeedback/<pid>', methods = ['GET', 'POST'])
+def updateProductFeedback(pid):
+    info = User.get(current_user.id)
+    uid = current_user.id
+    ratings, text = feedbackToProduct.GetFeedback(uid, int(pid))
+    form = getUpdateFeedback(int(ratings), text)
+    if info is None:
+        return redirect(url_for('users.login'))
+    if form.validate_on_submit():
+        text = form.feedback.data
+        ratings = form.ratings.data
+        result = feedbackToProduct.UpdateFeedback(uid, pid, ratings, text)
+        if not result:
+            flash('sorry, something went wrong')
+        else:
+            flash('Update success')
+            # redirect
+            feedbackReceived = SellerFeedback.getFeedback(current_user.id)
+            myFeedbackProduct = MyFeedbackProduct.getFeedback(info.id)
+            myFeedbackSeller = MyFeedbackSeller.getFeedback(info.id)
+            return render_template('profileFeedback.html', feedbackReceived=feedbackReceived, myFeedbackProduct=myFeedbackProduct, myFeedbackSeller=myFeedbackSeller)
+
+    return render_template('updateProductFeedback.html', form = form)
+
+
+@bp.route('/voteStatus/<sid>/<uid>', methods = ['GET', 'POST'])
+def voteStatus(uid, sid):
+    info = User.get(sid)
+    newvote = int(feedbackToSeller.GetVote(uid, int(sid)))+1
+    if info is None:
+        return redirect(url_for('users.login'))
+
+    Numvote = feedbackToSeller.vote(uid, int(sid), newvote)
+    if not Numvote:
+        flash('sorry, something went wrong')
+    else:
+        flash('Vote successfully')
+        # redirect
+        purchased, commented = feedbackToSeller.VerifyPurchase(uid, int(sid))
+        Numreviews, Avgratings = feedbackToSeller.SummaryRatings(int(sid))
+        feedbacks = SellerFeedback.getFeedback(info.id)
+        isSeller, info = User.getPublicView(sid)
+        form = feedbackToSellerForm()
+        return render_template('publicProfile.html',form=form, isSeller=isSeller, info=info, purchased = purchased, commented = commented, feedbacks=feedbacks, Numreviews =Numreviews, Avgratings = Avgratings)
+
+    return render_template('voteStatus.html')
+
+
+@bp.route('/removeProductFeedback/<pid>', methods=['GET', 'POST'])
+def removeProductFeedback(pid):
+    if not current_user.is_authenticated:
+        return redirect(url_for('users.login'))
+    info = User.get(current_user.id)
+    feedbackToProduct.removeFeedback(current_user.id, int(pid))  
+    feedbackReceived = SellerFeedback.getFeedback(current_user.id)
+    myFeedbackProduct = MyFeedbackProduct.getFeedback(info.id)
+    myFeedbackSeller = MyFeedbackSeller.getFeedback(info.id)
+    return render_template('profileFeedback.html', feedbackReceived=feedbackReceived, myFeedbackProduct=myFeedbackProduct, myFeedbackSeller=myFeedbackSeller)
+
+
+@bp.route('/removeSellerFeedback/<sid>', methods=['GET', 'POST'])
+def removeSellerFeedback(sid):
+    if not current_user.is_authenticated:
+        return redirect(url_for('users.login'))
+    info = User.get(current_user.id)
+    feedbackToSeller.removeFeedback(current_user.id, int(sid))  
+    feedbackReceived = SellerFeedback.getFeedback(current_user.id)
+    myFeedbackProduct = MyFeedbackProduct.getFeedback(info.id)
+    myFeedbackSeller = MyFeedbackSeller.getFeedback(info.id)
+    return render_template('profileFeedback.html', feedbackReceived=feedbackReceived, myFeedbackProduct=myFeedbackProduct, myFeedbackSeller=myFeedbackSeller)
+

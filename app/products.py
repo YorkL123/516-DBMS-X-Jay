@@ -30,8 +30,9 @@ def details(pid):
     products = Product.set_avgratings([product])
     seller_info = Product.getSellerInfo(pid)
     ratings_and_reviews = Product.get_product_ratings_and_reviews(pid)
+    Numreviews, Avgratings = feedbackToProduct.SummaryRatings(int(pid))
     return render_template('productdetails.html', avail_products = products, seller_info = seller_info,
-     ratings_and_reviews = ratings_and_reviews)
+     ratings_and_reviews = ratings_and_reviews, Numreviews = Numreviews, Avgratings = Avgratings)
 
 @bp.route('/editproductdetails/<int:pid>/<int:sid>', methods=['GET', 'POST'])
 def editproductdetails(pid, sid):# get all available products for sale:
@@ -40,7 +41,8 @@ def editproductdetails(pid, sid):# get all available products for sale:
         Product.update_product_description(pid, sid, updateform.description.data)
         product = Product.get(pid)
         seller_info = Product.getSellerInfo(pid)
-        return render_template('productdetails.html', avail_products = [product],seller_info = seller_info)
+        Numreviews, Avgratings = feedbackToProduct.SummaryRatings(int(pid))
+        return render_template('productdetails.html', avail_products = [product],seller_info = seller_info, ratings_and_reviews = ratings_and_reviews, Numreviews = Numreviews, Avgratings = Avgratings)
     return render_template('edit_productdetails.html', pid=pid, sid=sid, updateform=updateform)
 
 @bp.route('/cart', methods=['GET', 'POST'])
@@ -110,12 +112,14 @@ class feedbackToProductForm(FlaskForm):
     feedback = TextAreaField('Please write your feedback to this product', validators=[DataRequired()])
     submit = SubmitField('submit')
 
+
 @bp.route('/writefeedback/<pid>', methods=['GET', 'POST'])
 def writeFeedback(pid):
     if not current_user.is_authenticated:
         return redirect(url_for('users.login'))
     form = feedbackToProductForm()
     uid = current_user.id
+    commented = feedbackToProduct.VerifyComment(int(uid), int(pid))
     if form.validate_on_submit():
         #send feedback to db
         text = form.feedback.data
@@ -127,5 +131,34 @@ def writeFeedback(pid):
             flash('submit already')
             product = Product.get(pid)
             seller_info = Product.getSellerInfo(pid)
-            return render_template('productdetails.html',avail_products=[product],seller_info=seller_info)
-    return render_template('feedbackToProduct.html',form=form, pid=pid)
+            commented = feedbackToProduct.VerifyComment(int(uid), int(pid))
+            ratings_and_reviews = Product.get_product_ratings_and_reviews(pid)
+            Numreviews, Avgratings = feedbackToProduct.SummaryRatings(int(pid))
+            return render_template('productdetails.html',avail_products=[product],seller_info=seller_info, ratings_and_reviews=ratings_and_reviews, Numreviews = Numreviews, Avgratings = Avgratings)
+    return render_template('feedbackToProduct.html',form=form, pid=pid, commented = commented)
+
+
+@bp.route('/productVote/<pid>/<uid>', methods = ['GET', 'POST'])
+def productVote(uid, pid):
+    if not current_user.is_authenticated:
+        return redirect(url_for('users.login'))
+    newvote = int(feedbackToProduct.GetVote(uid, int(pid)))+1
+
+    Numvote = feedbackToProduct.vote(uid, int(pid), newvote)
+    if not Numvote:
+        flash('sorry, something went wrong')
+    else:
+        flash('Vote successfully')
+        product = Product.get(pid)
+        seller_info = Product.getSellerInfo(pid)
+        commented = feedbackToProduct.VerifyComment(int(uid), int(pid))
+        ratings_and_reviews = Product.get_product_ratings_and_reviews(pid)
+        Numreviews, Avgratings = feedbackToProduct.SummaryRatings(int(pid))
+        return render_template('productdetails.html',avail_products=[product],seller_info=seller_info, ratings_and_reviews=ratings_and_reviews, Numreviews = Numreviews, Avgratings = Avgratings)
+
+    product = Product.get(pid)
+    products = Product.set_avgratings([product])
+    seller_info = Product.getSellerInfo(pid)
+    ratings_and_reviews = Product.get_product_ratings_and_reviews(pid)
+    Numreviews, Avgratings = feedbackToProduct.SummaryRatings(int(pid))
+    return render_template('productdetails.html', avail_products = products, seller_info = seller_info, ratings_and_reviews = ratings_and_reviews, Numreviews = Numreviews, Avgratings = Avgratings)
