@@ -14,7 +14,7 @@ createdb amazon
 ```
 
 If you are using Windows VM, delete 'install.sh' and 'db/setup.sh' mentioned above, 
-and use files 'install_win.sh' and 'db/setup_win.sh'. You may change their filenames, deleting "_win" and make them back to 'install.sh' and 'db/setup.sh'. After that, run '''./install.sh''' as usual.
+and use files 'install_win.sh' and 'db/setup_win.sh'. You may change their filenames, deleting "_win" and make them back to 'install.sh' and 'db/setup.sh'. After that, run ```./install.sh``` as usual.
 
 ## DB SQL IMPORTANT!
 PLEASE GO TO db/create.sql & db/load.sql TO CREATE/CHANGE YOUR DATABASE
