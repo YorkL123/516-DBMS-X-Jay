@@ -4,18 +4,22 @@ Created by [Rickard Stureborg](http://www.rickard.stureborg.com) and [Yihao Hu](
 
 ## SETUP
 After you clone/fork this repo, if you are using Mac system, go into the repo directory and then run '''./install.sh'''. 
+
 This will install a bunch of things, set up an important file called `.flashenv`. 
 It may throw errors when creating database because the shell script for DB is not for Mac. To create a PostgreSQL database named `amazon`, you may need to manually run the following commands in your terminal:
+
 '''
 source ../.flaskenv
 createdb amazon
 '''
+
 If you are using Windows VM, delete 'install.sh' and 'db/setup.sh' mentioned above, 
 and use files 'install_win.sh' and 'db/setup_win.sh'. You may change their filenames, deleting "_win" and make them back to 'install.sh' and 'db/setup.sh'. After that, run '''./install.sh''' as usual.
 
 ## DB SQL IMPORTANT!
 PLEASE GO TO db/create.sql & db/load.sql TO CREATE/CHANGE YOUR DATABASE
 If your existing DB tables have conflicts, you may DROP all your tables, then create new tables by:
+
 1. In your **/db** folder , run the command line: 
 
 **psql -af create.sql amazon**
