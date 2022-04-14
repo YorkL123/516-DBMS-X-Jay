@@ -3,15 +3,15 @@ This course project is intended as a 'standard option'.
 Created by [Rickard Stureborg](http://www.rickard.stureborg.com) and [Yihao Hu](https://www.linkedin.com/in/yihaoh/) for CS316, adapted for CS516.
 
 ## SETUP
-After you clone/fork this repo, if you are using Mac system, go into the repo directory and then run '''./install.sh'''. 
+After you clone/fork this repo, if you are using Mac system, go into the repo directory and then run ```./install.sh```. 
 
 This will install a bunch of things, set up an important file called `.flashenv`. 
 It may throw errors when creating database because the shell script for DB is not for Mac. To create a PostgreSQL database named `amazon`, you may need to manually run the following commands in your terminal:
 
-'''
+```
 source ../.flaskenv
 createdb amazon
-'''
+```
 
 If you are using Windows VM, delete 'install.sh' and 'db/setup.sh' mentioned above, 
 and use files 'install_win.sh' and 'db/setup_win.sh'. You may change their filenames, deleting "_win" and make them back to 'install.sh' and 'db/setup.sh'. After that, run '''./install.sh''' as usual.
